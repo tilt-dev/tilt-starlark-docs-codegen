@@ -1,6 +1,6 @@
 # tilt-starlark-docs-codegen
 
-[![Build Status](https://circleci.com/gh/tilt-dev/tilt-starlark-docs-codegen/tree/main.svg?style=shield)](https://circleci.com/gh/tilt-dev/tilt-starlark-codegen)
+[![Build Status](https://circleci.com/gh/tilt-dev/tilt-starlark-docs-codegen/tree/main.svg?style=shield)](https://circleci.com/gh/tilt-dev/tilt-starlark-docs-codegen)
 
 Generates starlark API documentation based on Kubernetes-style API models
 
