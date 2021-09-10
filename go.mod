@@ -1,4 +1,4 @@
-module github.com/tilt-dev/tilt-starlark-codegen
+module github.com/tilt-dev/tilt-starlark-docs-codegen
 
 go 1.16
 

@@ -7,9 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"golang.org/x/tools/imports"
-
-	"github.com/tilt-dev/tilt-starlark-codegen/internal/codegen"
+	"github.com/tilt-dev/tilt-starlark-docs-codegen/internal/codegen"
 )
 
 func main() {
@@ -20,13 +18,13 @@ func main() {
 
 Usage:
 # Sample input and output
-tilt-starlark-codegen ./path/to/input ./path/to/output
+tilt-starlark-docs-codegen ./path/to/input ./path/to/output
 
 # In the Tilt codebase
-tilt-starlark-codegen ./pkg/apis/core/v1alpha1 ./internal/tiltfile/v1alpha1
+tilt-starlark-docs-codegen ./pkg/apis/core/v1alpha1 ../tilt.build/api/modules/v1alpha1
 
 # Dry run (print to stdout)
-tilt-starlark-codegen ./pkg/apis/core/v1alpha1 -
+tilt-starlark-docs-codegen ./pkg/apis/core/v1alpha1 -
 `, filepath.Base(args[0]))
 		os.Exit(1)
 	}
@@ -44,12 +42,6 @@ tilt-starlark-codegen ./pkg/apis/core/v1alpha1 -
 		os.Exit(1)
 	}
 
-	err = codegen.WriteStarlarkRegistrationFunc(types, pkg, buf)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
-	}
-
 	for _, t := range types {
 		err := codegen.WriteStarlarkFunction(t, pkg, buf)
 		if err != nil {
@@ -58,22 +50,13 @@ tilt-starlark-codegen ./pkg/apis/core/v1alpha1 -
 		}
 	}
 
-	// gofmt
-	result, err := imports.Process("", buf.Bytes(), nil)
-	if err != nil {
-
-		fmt.Fprintf(os.Stderr, "Error formatting output: %v\n", err)
-		fmt.Fprintf(os.Stderr, "%s\n", buf.String())
-		os.Exit(1)
-	}
-
 	out, err := codegen.OpenOutputFile(args[2])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 
-	_, err = out.Write(result)
+	_, err = out.Write(buf.Bytes())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
