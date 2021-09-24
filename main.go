@@ -29,7 +29,7 @@ tilt-starlark-docs-codegen ./pkg/apis/core/v1alpha1 -
 		os.Exit(1)
 	}
 
-	pkg, types, err := codegen.LoadStarlarkGenTypes(args[1])
+	pkg, topTypes, err := codegen.LoadStarlarkGenTypes(args[1])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
@@ -42,8 +42,30 @@ tilt-starlark-docs-codegen ./pkg/apis/core/v1alpha1 -
 		os.Exit(1)
 	}
 
-	for _, t := range types {
+	memberTypes, err := codegen.FindStructMembers(topTypes)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	for _, t := range memberTypes {
+		err := codegen.WriteStarlarkMemberClass(t, pkg, buf)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+	}
+
+	for _, t := range topTypes {
 		err := codegen.WriteStarlarkFunction(t, pkg, buf)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+	}
+
+	for _, t := range memberTypes {
+		err := codegen.WriteStarlarkMemberFunction(t, pkg, buf)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
