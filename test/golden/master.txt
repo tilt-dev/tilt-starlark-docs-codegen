@@ -10,6 +10,26 @@ class IgnoreDef:
   pass
 
 
+def config_map(
+  name: str,
+  labels: Dict[str, str] = None,
+  annotations: Dict[str, str] = None,
+  data: Dict[str, str] = None,
+):
+  """
+  ConfigMap stores unstructured data that other controllers can read and write.
+  
+  Useful for sharing data from one system and subscribing to it from another.
+  
+
+  Args:
+    name: The name in the Object metadata.
+    labels: A set of key/value pairs in the Object metadata for grouping objects.
+    annotations: A set of key/value pairs in the Object metadata for attaching data to objects.
+    data: Data contains the configuration data.
+      Each key must consist of alphanumeric characters, '-', '_' or '.'.
+"""
+  pass
 def file_watch(
   name: str,
   labels: Dict[str, str] = None,
@@ -17,6 +37,7 @@ def file_watch(
   watched_paths: List[str] = None,
   ignores: List[IgnoreDef] = None,
   strategy: str = "",
+  debounce: str = "",
 ):
   """
   FileWatch
@@ -29,6 +50,7 @@ def file_watch(
       
     ignores: Ignores are optional rules to filter out a subset of changes matched by WatchedPaths.
     strategy: Strategy for testing named strings.
+    debounce: Duration for testing metav1.Duration
 """
   pass
 

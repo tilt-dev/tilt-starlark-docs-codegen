@@ -1,7 +1,6 @@
 package codegen
 
 import (
-	"fmt"
 	"sort"
 
 	"k8s.io/gengo/types"
@@ -13,7 +12,7 @@ func FindStructMembers(topLevelTypes []*types.Type) ([]*types.Type, error) {
 	for _, t := range topLevelTypes {
 		spec := getSpecMemberType(t)
 		if spec == nil {
-			return nil, fmt.Errorf("type has no spec: %s", t.Name.Name)
+			continue
 		}
 		findStructMembersHelper(spec, resultMap)
 	}
@@ -41,7 +40,7 @@ func findStructMembersHelper(t *types.Type, result map[string]*types.Type) {
 	}
 
 	for _, m := range t.Members {
-		if isTimeMember(m) {
+		if isTimeMember(m) || isDurationMember(m) {
 			continue
 		}
 
@@ -65,6 +64,22 @@ func isTimeMember(m types.Member) bool {
 	if m.Type.Kind == types.Struct {
 		tName := m.Type.Name.Name
 		if tName == "Time" || tName == "MicroTime" {
+			return true
+		}
+	}
+	return false
+}
+
+func isDurationMember(m types.Member) bool {
+	if m.Type.Kind == types.Pointer && m.Type.Elem.Kind == types.Struct {
+		elName := m.Type.Elem.Name.Name
+		if elName == "Duration" {
+			return true
+		}
+	}
+	if m.Type.Kind == types.Struct {
+		tName := m.Type.Name.Name
+		if tName == "Duration" {
 			return true
 		}
 	}
