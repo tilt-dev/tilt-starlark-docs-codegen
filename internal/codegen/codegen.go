@@ -16,16 +16,12 @@ import (
 // Find all top-level types with the tilt:starlark-gen=true tag.
 func LoadStarlarkGenTypes(pkg string) (*types.Package, []*types.Type, error) {
 	b := parser.New()
-	err := b.AddDir(pkg)
-	if err != nil {
-		return nil, nil, err
-	}
-	universe, err := b.FindTypes()
+	u := types.Universe{}
+	pkgSpec, err := b.AddDirectoryTo(pkg, &u)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	pkgSpec := universe.Package(pkg)
 	results := []*types.Type{}
 	for _, t := range pkgSpec.Types {
 		ok, err := types.ExtractSingleBoolCommentTag("+", "tilt:starlark-gen", false, t.CommentLines)
@@ -47,6 +43,16 @@ func getSpecMemberType(t *types.Type) *types.Type {
 	for _, member := range t.Members {
 		if member.Name == "Spec" {
 			return member.Type
+		}
+	}
+	return nil
+}
+
+// Special-case config map, which only has one member: Data
+func getDataMember(t *types.Type) *types.Member {
+	for _, member := range t.Members {
+		if member.Name == "Data" {
+			return &member
 		}
 	}
 	return nil
@@ -93,6 +99,9 @@ func argName(m types.Member) string {
 
 func argSpec(m types.Member) (string, string, string, error) {
 	name := argName(m)
+	if isDurationMember(m) {
+		return name, "str", `""`, nil
+	}
 	if m.Type.Kind == types.Builtin && m.Type.Name.Name == "string" {
 		return name, "str", `""`, nil
 	}
@@ -141,8 +150,14 @@ func filterCommentTags(lines []string) []string {
 func WriteStarlarkFunction(t *types.Type, pkg *types.Package, w io.Writer) error {
 	tName := t.Name.Name
 	spec := getSpecMemberType(t)
-	if spec == nil {
-		return fmt.Errorf("type has no spec: %s", tName)
+	data := getDataMember(t)
+	var members []types.Member
+	if spec != nil {
+		members = spec.Members
+	} else if data != nil {
+		members = []types.Member{*data}
+	} else {
+		return fmt.Errorf("type has no spec or data field: %s", tName)
 	}
 
 	// Print the function signature.
@@ -157,7 +172,7 @@ def %s(
 	}
 
 	// Print parameters for each spec member.
-	for _, member := range spec.Members {
+	for _, member := range members {
 		if isTimeMember(member) {
 			continue
 		}
@@ -189,7 +204,7 @@ def %s(
 	}
 
 	// Print the argument docs.
-	for _, member := range spec.Members {
+	for _, member := range members {
 		if isTimeMember(member) {
 			continue
 		}

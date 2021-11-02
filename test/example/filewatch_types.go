@@ -60,6 +60,9 @@ type FileWatchSpec struct {
 
 	// Strategy for testing named strings.
 	Strategy FileWatchStrategy `json:"strategy,omitempty" protobuf:"bytes,3,opt,name=strategy"`
+
+	// Duration for testing metav1.Duration
+	Debounce metav1.Duration `json:"debounce,omitempty" protobuf:"bytes,4,opt,name=duration"`
 }
 
 type IgnoreDef struct {
